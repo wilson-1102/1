@@ -3,6 +3,8 @@ from turtle import up
 from pycat.core import Window, Scheduler, Sprite, KeyCode, Label
 import random
 window = Window()
+score = 0
+hp = 5
 class Player (Sprite):
     def on_create(self):
         self.image = ('player-bl.png')
@@ -49,6 +51,14 @@ class Player (Sprite):
         if window.is_key_down(KeyCode.SPACE) and  not self.gun:
             self.slash = True
             window.create_sprite(Slash)
+        if hp == 0 :
+            window.close()
+            print ('U lose')
+           
+        if score == 25 :
+            window.close()
+            print ('U win')
+            
     def on_left_click_anywhere(self):
         if player.gun == True:
             window.create_sprite(Player_bullet)
@@ -92,6 +102,8 @@ class make_dog (Sprite):
        
         self.scale = 0.4
     def on_update(self, dt):
+        global score
+        global hp
         self.point_toward_sprite(player)
         self.move_forward(3)
         if self.is_touching_window_edge():
@@ -102,11 +114,19 @@ class make_dog (Sprite):
         if self.is_touching_any_sprite_with_tag('Slash'):
             self.enabled = False
             self.is_visible = False
+            score +=1
             self.delete()
             return
         if self.is_touching_any_sprite_with_tag('player_bullet'):
             self.enabled = False
             self.is_visible = False
+            score +=1
+            self.delete()
+            return
+        if self.is_touching_any_sprite_with_tag('player'):
+            self.enabled = False
+            self.is_visible = False
+            hp -=1
             self.delete()
             return
             
@@ -123,9 +143,12 @@ class make_enemy (Sprite):
         self.add_tag('enemy')
         self.time = 0
         self.bullet_time = 1
-        self.point = 0 
+        
     def on_update(self, dt):
-        self.move_forward(0.5)
+        global score
+        global hp
+
+        self.move_forward(2)
         self.time += dt
         if self.time > self.bullet_time:
             enemy_bullet = window.create_sprite(enemybullet)
@@ -140,12 +163,19 @@ class make_enemy (Sprite):
         if self.is_touching_any_sprite_with_tag('Slash'):
             self.enabled = False
             self.is_visible = False
-            self.point +=1
+            score +=1
             self.delete()
             return
         if self.is_touching_any_sprite_with_tag('player_bullet'):
             self.enabled = False
             self.is_visible = False
+            score +=1
+            self.delete()
+            return
+        if self.is_touching_any_sprite_with_tag('player'):
+            self.enabled = False
+            self.is_visible = False
+            hp -=1
             self.delete()
             return
             
@@ -158,19 +188,51 @@ class kills (Label):
         self.text = '0'
         self.position = 1035, 80
     def on_update(self, dt):
-        self.text  = str(enemy.point)
+        self.text  = str( score)
 window.create_label(kills)
+
+class kill (Label):
+    def on_create (self):
+        self.text = '0'
+        self.position = 960, 80
+    def on_update(self, dt):
+        self.text  = ( 'kills:')
+window.create_label(kill)
+
+class HP (Label):
+    def on_create (self):
+        self.text = '5'
+        self.position = 1035, 300
+    def on_update(self, dt):
+        self.text  = str(hp)
+window.create_label(HP)
+
+class HPS (Label):
+    def on_create (self):
+        self.text = '0'
+        self.position = 960, 300
+    def on_update(self, dt):
+        self.text  = ( 'HP:')
+window.create_label(HPS)
 class enemybullet (Sprite):
     def on_create(self):
         self.image = 'blue.png'
         self.scale = 0.1
         self.add_tag('enemy_bullet')
     def on_update(self, dt):
+        global hp
         self.move_forward (3)
         if self.is_touching_window_edge():
             self.delete()
-        if self.is_touching_any_sprite_with_tag('Player'):
+        if self.is_touching_any_sprite_with_tag('player'):
+            self.enabled = False
+            self.is_visible = False
+            hp -=1
             self.delete()
+            return
+  
+
+
 
 window.create_sprite(image = 'gun-image.png', x = 60, y = 40, scale = 0.1)      
 window.create_sprite(image = 'baseball-bat-image.png', x = 170, y = 40, scale = 0.123)  
